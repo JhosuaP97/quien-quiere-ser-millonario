@@ -1,4 +1,4 @@
-# # 🎯 ¿Quién Quiere Ser Millonario? - Edición Colombia 🇨🇴
+# # 🎯 ¿Quién Quiere Ser Millonario?
 
 Un juego completo de "¿Quién Quiere Ser Millonario?" desarrollado en React con TypeScript. ¡Pon a prueba tus conocimientos y ve si tienes lo que se necesita para convertirte en millonario... en pesos colombianos!
 

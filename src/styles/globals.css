@@ -14,6 +14,84 @@
   --border-gold: #fbbf24;
 }
 
+/* Control de volumen - REMOVIDO - Ahora está en el menú de configuración */
+/*
+.volume-control {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(30, 58, 138, 0.95);
+  border: 2px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.volume-control:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.volume-emoji {
+  font-size: 24px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-gold);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #fcd34d;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent-gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.volume-percentage {
+  color: var(--accent-gold);
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 35px;
+  text-align: center;
+}
+*/
+
 * {
   margin: 0;
   padding: 0;
@@ -136,6 +214,169 @@ body {
 
 .bounce {
   animation: bounce 1s;
+}
+
+/* Menú de configuración desplegable */
+.settings-menu {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.settings-toggle {
+  background: rgba(30, 58, 138, 0.95);
+  border: 2px solid var(--accent-gold);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.settings-toggle:hover {
+  transform: translateY(-2px) rotate(90deg);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.settings-toggle:active {
+  transform: translateY(-1px) rotate(90deg);
+}
+
+/* Efecto cuando el menú está abierto */
+.settings-menu:has(.settings-dropdown) .settings-toggle {
+  background: rgba(30, 58, 138, 1);
+  border-color: #fcd34d;
+  transform: rotate(90deg);
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: rgba(30, 58, 138, 0.95);
+  border: 2px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 20px;
+  min-width: 250px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-item {
+  margin-bottom: 20px;
+}
+
+.settings-item:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.volume-control-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-slider-inline {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.volume-slider-inline::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent-gold);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.volume-slider-inline::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #fcd34d;
+}
+
+.volume-slider-inline::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent-gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.volume-percentage-inline {
+  color: var(--accent-gold);
+  font-weight: bold;
+  font-size: 12px;
+  min-width: 35px;
+  text-align: right;
+}
+
+.reset-questions-button {
+  background: rgba(220, 38, 38, 0.1);
+  border: 2px solid #dc2626;
+  color: #fca5a5;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.reset-questions-button:hover {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.reset-questions-button:active {
+  transform: translateY(0);
 }
 
 /* Responsive */

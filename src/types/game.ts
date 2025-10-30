@@ -6,6 +6,8 @@ export interface GameState {
   hasWon: boolean;
   selectedAnswer: string | null;
   isAnswerRevealed: boolean;
+  waitingForNext: boolean;
+  isBlinking: boolean; // Para el período de titilación de 5 segundos
   usedLifelines: {
     fiftyFifty: boolean;
     askAudience: boolean;

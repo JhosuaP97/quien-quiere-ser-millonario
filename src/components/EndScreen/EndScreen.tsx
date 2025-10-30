@@ -17,7 +17,7 @@ const EndScreen: React.FC<EndScreenProps> = ({
 }) => {
   const getScoreMessage = () => {
     if (hasWon) {
-      return "¡FELICITACIONES! ¡ERES MILLONARIO!";
+      return "¡FELICITACIONES! ¡ERES EL REY DE LAS CORONAS!";
     } else if (score >= 10) {
       return "¡Increíble! Llegaste muy lejos";
     } else if (score >= 5) {
@@ -31,28 +31,29 @@ const EndScreen: React.FC<EndScreenProps> = ({
     if (hasWon) {
       return "Has demostrado que tienes el conocimiento y la valentía para llegar hasta el final. ¡Eres una leyenda!";
     } else if (score >= 10) {
-      return "Estuviste muy cerca de la gloria. Con un poco más de suerte, la próxima vez podrías ser millonario.";
+      return "Estuviste muy cerca de la gloria. Con un poco más de suerte, la próxima vez podrías conseguir todas las coronas.";
     } else if (score >= 5) {
       return "Llegaste a la mitad del camino. Eso demuestra que tienes potencial. ¡Sigue practicando!";
     } else {
-      return "Todos los grandes millonarios empezaron desde abajo. ¡Tu momento llegará!";
+      return "Todos los grandes campeones empezaron desde abajo. ¡Tu momento llegará!";
     }
   };
 
   const getScoreDetails = () => {
-    let guaranteedPrize = "$0";
+    let guaranteedPrize = "👑 0 Coronas";
 
     if (score > 9) {
-      guaranteedPrize = prizeAmounts[9]; // $1,280,000,000
+      guaranteedPrize = prizeAmounts[9]; // 320 Coronas
     } else if (score > 4) {
-      guaranteedPrize = prizeAmounts[4]; // $40,000,000
+      guaranteedPrize = prizeAmounts[4]; // 10 Coronas
     }
 
     return {
       questionsAnswered: score,
       totalQuestions: 15,
       guaranteedPrize,
-      finalPrize: score > 0 ? (hasWon ? finalPrize : guaranteedPrize) : "$0",
+      finalPrize:
+        score > 0 ? (hasWon ? finalPrize : guaranteedPrize) : "👑 0 Coronas",
     };
   };
 
@@ -104,12 +105,9 @@ const EndScreen: React.FC<EndScreenProps> = ({
         <div className="prize-container slide-in-right">
           <h2>Premio Final</h2>
           <div className="final-prize">
-            <span className="prize-currency">$</span>
-            <span className="prize-number">
-              {scoreDetails.finalPrize.replace("$", "").replace(/,/g, ".")}
-            </span>
+            <span className="prize-text">{scoreDetails.finalPrize}</span>
           </div>
-          {!hasWon && scoreDetails.guaranteedPrize !== "$0" && (
+          {!hasWon && scoreDetails.guaranteedPrize !== "👑 0 Coronas" && (
             <p className="guaranteed-text">
               Premio garantizado alcanzado:{" "}
               <strong>{scoreDetails.guaranteedPrize}</strong>
@@ -148,44 +146,6 @@ const EndScreen: React.FC<EndScreenProps> = ({
             <span className="button-icon">🔄</span>
             Jugar de Nuevo
           </button>
-
-          <div className="share-container">
-            <p>¡Comparte tu logro!</p>
-            <button
-              className="share-button"
-              onClick={() => {
-                const text = hasWon
-                  ? `¡Acabo de ganar $40,000,000,000 en "¿Quién Quiere Ser Millonario?"! 🏆👑`
-                  : `Respondí ${score} preguntas correctas y gané ${scoreDetails.finalPrize} en "¿Quién Quiere Ser Millonario?" 🎯`;
-
-                if (navigator.share) {
-                  navigator.share({
-                    title: "¿Quién Quiere Ser Millonario?",
-                    text: text,
-                    url: window.location.href,
-                  });
-                } else {
-                  navigator.clipboard.writeText(text);
-                  alert("¡Texto copiado al portapapeles!");
-                }
-              }}
-            >
-              <span className="button-icon">📤</span>
-              Compartir Resultado
-            </button>
-          </div>
-        </div>
-
-        {/* Mensaje motivacional */}
-        <div className="motivation-container fade-in">
-          <div className="motivation-quote">
-            <blockquote>
-              {hasWon
-                ? '"El conocimiento es el único tesoro que crece cuando se comparte."'
-                : '"El fracaso es solo la oportunidad de empezar de nuevo con más inteligencia."'}
-            </blockquote>
-            <cite>- Henry Ford</cite>
-          </div>
         </div>
       </div>
     </div>

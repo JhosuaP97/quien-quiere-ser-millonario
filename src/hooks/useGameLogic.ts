@@ -14,6 +14,8 @@ const initialGameState: GameState = {
   hasWon: false,
   selectedAnswer: null,
   isAnswerRevealed: false,
+  waitingForNext: false,
+  isBlinking: false,
   usedLifelines: {
     fiftyFifty: false,
     askAudience: false,
@@ -27,17 +29,63 @@ export const useGameLogic = () => {
   const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
 
+  // Función para obtener preguntas usadas del localStorage
+  const getUsedQuestions = useCallback((): number[] => {
+    try {
+      const used = localStorage.getItem("usedQuestions");
+      return used ? JSON.parse(used) : [];
+    } catch {
+      return [];
+    }
+  }, []);
+
+  // Función para guardar preguntas usadas en localStorage
+  const saveUsedQuestions = useCallback((usedIds: number[]) => {
+    try {
+      localStorage.setItem("usedQuestions", JSON.stringify(usedIds));
+    } catch {
+      // Silenciar errores de localStorage
+    }
+  }, []);
+
+  // Función para filtrar preguntas no utilizadas
+  const getAvailableQuestions = useCallback(
+    (difficulty: "easy" | "medium" | "hard"): Question[] => {
+      const usedQuestionIds = getUsedQuestions();
+      const allQuestions = getQuestionsByDifficulty(difficulty);
+      const availableQuestions = allQuestions.filter(
+        (q) => !usedQuestionIds.includes(q.id)
+      );
+
+      // Si no hay suficientes preguntas disponibles, resetear el historial para esa dificultad
+      if (availableQuestions.length < 5) {
+        const allUsedIds = getUsedQuestions();
+        const otherDifficultyIds = allUsedIds.filter((id) => {
+          const question = allQuestions.find((q) => q.id === id);
+          return !question; // Mantener IDs que no son de esta dificultad
+        });
+        saveUsedQuestions(otherDifficultyIds);
+        return allQuestions; // Devolver todas las preguntas de esta dificultad
+      }
+
+      return availableQuestions;
+    },
+    [getUsedQuestions, saveUsedQuestions]
+  );
+
   // Inicializar el juego
   const startGame = useCallback(() => {
     // Seleccionar preguntas: 5 fáciles, 5 medianas, 5 difíciles
-    const easyQuestions = shuffleArray(getQuestionsByDifficulty("easy")).slice(
+    // Usando preguntas no utilizadas cuando sea posible
+    const easyQuestions = shuffleArray(getAvailableQuestions("easy")).slice(
       0,
       5
     );
-    const mediumQuestions = shuffleArray(
-      getQuestionsByDifficulty("medium")
-    ).slice(0, 5);
-    const hardQuestions = shuffleArray(getQuestionsByDifficulty("hard")).slice(
+    const mediumQuestions = shuffleArray(getAvailableQuestions("medium")).slice(
+      0,
+      5
+    );
+    const hardQuestions = shuffleArray(getAvailableQuestions("hard")).slice(
       0,
       5
     );
@@ -48,13 +96,18 @@ export const useGameLogic = () => {
       ...hardQuestions,
     ];
 
+    // Marcar estas preguntas como usadas
+    const usedIds = getUsedQuestions();
+    const newUsedIds = [...usedIds, ...selectedQuestions.map((q) => q.id)];
+    saveUsedQuestions(newUsedIds);
+
     setGameQuestions(selectedQuestions);
     setCurrentQuestion(selectedQuestions[0]);
     setGameState({
       ...initialGameState,
       isGameActive: true,
     });
-  }, []);
+  }, [getAvailableQuestions, getUsedQuestions, saveUsedQuestions]);
 
   // Seleccionar respuesta
   const selectAnswer = useCallback(
@@ -73,57 +126,62 @@ export const useGameLogic = () => {
   const confirmAnswer = useCallback(() => {
     if (!gameState.selectedAnswer || !currentQuestion) return;
 
-    const isCorrect =
-      gameState.selectedAnswer === currentQuestion.correctAnswer;
-
+    // Iniciar el período de titilación
     setGameState((prev) => ({
       ...prev,
-      isAnswerRevealed: true,
+      isBlinking: true,
     }));
 
-    // Esperar un momento para mostrar el resultado antes de continuar
+    // Después de 5 segundos, revelar la respuesta
     setTimeout(() => {
-      if (isCorrect) {
-        const nextIndex = gameState.currentQuestionIndex + 1;
+      setGameState((prev) => ({
+        ...prev,
+        isAnswerRevealed: true,
+        waitingForNext: true,
+        isBlinking: false,
+      }));
+    }, 5000);
+  }, [gameState.selectedAnswer, currentQuestion]);
 
-        if (nextIndex >= gameQuestions.length) {
-          // ¡Ganaste!
-          setGameState((prev) => ({
-            ...prev,
-            hasWon: true,
-            isGameActive: false,
-            isGameOver: true,
-            score: nextIndex,
-          }));
-        } else {
-          // Siguiente pregunta
-          setCurrentQuestion(gameQuestions[nextIndex]);
-          setGameState((prev) => ({
-            ...prev,
-            currentQuestionIndex: nextIndex,
-            selectedAnswer: null,
-            isAnswerRevealed: false,
-            eliminatedAnswers: [],
-            audiencePoll: undefined,
-            friendAdvice: undefined,
-            score: nextIndex,
-          }));
-        }
-      } else {
-        // Respuesta incorrecta - fin del juego
-        setGameState((prev) => ({
-          ...prev,
-          isGameActive: false,
-          isGameOver: true,
-        }));
-      }
-    }, 2000);
-  }, [
-    gameState.selectedAnswer,
-    gameState.currentQuestionIndex,
-    currentQuestion,
-    gameQuestions,
-  ]);
+  // Ir a la siguiente pregunta
+  const goToNextQuestion = useCallback(() => {
+    const nextIndex = gameState.currentQuestionIndex + 1;
+
+    if (nextIndex >= gameQuestions.length) {
+      // ¡Ganaste!
+      setGameState((prev) => ({
+        ...prev,
+        hasWon: true,
+        isGameActive: false,
+        isGameOver: true,
+        score: nextIndex,
+      }));
+    } else {
+      // Siguiente pregunta
+      setCurrentQuestion(gameQuestions[nextIndex]);
+      setGameState((prev) => ({
+        ...prev,
+        currentQuestionIndex: nextIndex,
+        selectedAnswer: null,
+        isAnswerRevealed: false,
+        waitingForNext: false,
+        isBlinking: false,
+        eliminatedAnswers: [],
+        audiencePoll: undefined,
+        friendAdvice: undefined,
+        score: nextIndex,
+      }));
+    }
+  }, [gameState.currentQuestionIndex, gameQuestions]);
+
+  // Ir a los resultados (cuando la respuesta es incorrecta)
+  const goToResults = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      isGameActive: false,
+      isGameOver: true,
+    }));
+  }, []);
 
   // Retirarse del juego
   const quitGame = useCallback(() => {
@@ -238,6 +296,15 @@ export const useGameLogic = () => {
     setCurrentQuestion(null);
   }, []);
 
+  // Resetear historial de preguntas (función de utilidad)
+  const resetQuestionHistory = useCallback(() => {
+    try {
+      localStorage.removeItem("usedQuestions");
+    } catch {
+      // Silenciar errores de localStorage
+    }
+  }, []);
+
   return {
     gameState,
     currentQuestion,
@@ -245,10 +312,13 @@ export const useGameLogic = () => {
     startGame,
     selectAnswer,
     confirmAnswer,
+    goToNextQuestion,
+    goToResults,
     quitGame,
     useFiftyFifty,
     useAskAudience,
     usePhoneAFriend,
     resetGame,
+    resetQuestionHistory,
   };
 };

@@ -1,6 +1,7 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import { Question } from "../../data/questions";
 import { GameState, AnswerOption } from "../../types/game";
+import { useAudioStore } from "../../stores/audioStore";
 import "./GameScreen.css";
 
 interface GameScreenProps {
@@ -8,6 +9,8 @@ interface GameScreenProps {
   currentQuestion: Question | null;
   onSelectAnswer: (answer: AnswerOption) => void;
   onConfirmAnswer: () => void;
+  onGoToNext: () => void;
+  onGoToResults: () => void;
   onQuitGame: () => void;
   onUseFiftyFifty: () => void;
   onUseAskAudience: () => void;
@@ -20,12 +23,111 @@ const GameScreen: React.FC<GameScreenProps> = ({
   currentQuestion,
   onSelectAnswer,
   onConfirmAnswer,
+  onGoToNext,
+  onGoToResults,
   onQuitGame,
   onUseFiftyFifty,
   onUseAskAudience,
   onUsePhoneAFriend,
   prizeAmount,
 }) => {
+  const { volume, audioEnabled } = useAudioStore();
+  const correctAudioRef = useRef<HTMLAudioElement>(null);
+  const incorrectAudioRef = useRef<HTMLAudioElement>(null);
+  const decisionAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Control de volumen para todos los audios
+  useEffect(() => {
+    const updateVolume = () => {
+      if (correctAudioRef.current) {
+        correctAudioRef.current.volume = volume;
+      }
+      if (incorrectAudioRef.current) {
+        incorrectAudioRef.current.volume = volume;
+      }
+      if (decisionAudioRef.current) {
+        decisionAudioRef.current.volume = volume;
+      }
+    };
+
+    // Actualizar volumen inmediatamente
+    updateVolume();
+
+    // También actualizar cuando los audios se carguen
+    const correctAudio = correctAudioRef.current;
+    const incorrectAudio = incorrectAudioRef.current;
+    const decisionAudio = decisionAudioRef.current;
+
+    if (correctAudio) {
+      correctAudio.addEventListener("loadeddata", updateVolume);
+    }
+    if (incorrectAudio) {
+      incorrectAudio.addEventListener("loadeddata", updateVolume);
+    }
+    if (decisionAudio) {
+      decisionAudio.addEventListener("loadeddata", updateVolume);
+    }
+
+    return () => {
+      if (correctAudio) {
+        correctAudio.removeEventListener("loadeddata", updateVolume);
+      }
+      if (incorrectAudio) {
+        incorrectAudio.removeEventListener("loadeddata", updateVolume);
+      }
+      if (decisionAudio) {
+        decisionAudio.removeEventListener("loadeddata", updateVolume);
+      }
+    };
+  }, [volume]);
+
+  // Reproducir sonidos cuando se revele la respuesta
+  useEffect(() => {
+    if (
+      audioEnabled &&
+      gameState.isAnswerRevealed &&
+      gameState.selectedAnswer &&
+      currentQuestion
+    ) {
+      const isCorrect =
+        gameState.selectedAnswer === currentQuestion.correctAnswer;
+
+      // Reproducir sonido inmediatamente cuando se revele la respuesta
+      if (isCorrect && correctAudioRef.current) {
+        correctAudioRef.current.volume = volume; // Asegurar volumen correcto
+        correctAudioRef.current.play().catch((error) => {
+          console.log("Error reproduciendo sonido correcto:", error);
+        });
+      } else if (!isCorrect && incorrectAudioRef.current) {
+        incorrectAudioRef.current.volume = volume; // Asegurar volumen correcto
+        incorrectAudioRef.current.play().catch((error) => {
+          console.log("Error reproduciendo sonido incorrecto:", error);
+        });
+      }
+    }
+  }, [
+    audioEnabled,
+    gameState.isAnswerRevealed,
+    gameState.selectedAnswer,
+    currentQuestion,
+    volume,
+  ]);
+
+  // Función modificada para manejar la confirmación con titilación y sonido de decisión
+  const handleConfirmAnswer = () => {
+    // Reproducir sonido de decisión inmediatamente
+    if (audioEnabled && decisionAudioRef.current) {
+      decisionAudioRef.current.volume = volume; // Asegurar volumen correcto
+      decisionAudioRef.current.play().catch((error) => {
+        console.log("Error reproduciendo sonido de decisión:", error);
+      });
+    }
+
+    // Después de 5 segundos, confirmar la respuesta
+    setTimeout(() => {
+      onConfirmAnswer();
+    }, 5000);
+  };
   if (!currentQuestion) {
     return <div>Cargando...</div>;
   }
@@ -40,6 +142,11 @@ const GameScreen: React.FC<GameScreenProps> = ({
 
     if (gameState.selectedAnswer === option) {
       className += " selected";
+
+      // Agregar efecto de titilación durante el período de blinking
+      if (gameState.isBlinking) {
+        className += " blinking";
+      }
     }
 
     if (gameState.isAnswerRevealed) {
@@ -56,7 +163,18 @@ const GameScreen: React.FC<GameScreenProps> = ({
     return className;
   };
 
-  const canConfirm = gameState.selectedAnswer && !gameState.isAnswerRevealed;
+  const canConfirm =
+    gameState.selectedAnswer &&
+    !gameState.isAnswerRevealed &&
+    !gameState.isBlinking;
+  const canGoNext =
+    gameState.waitingForNext &&
+    gameState.isAnswerRevealed &&
+    gameState.selectedAnswer === currentQuestion?.correctAnswer;
+  const canGoToResults =
+    gameState.waitingForNext &&
+    gameState.isAnswerRevealed &&
+    gameState.selectedAnswer !== currentQuestion?.correctAnswer;
 
   return (
     <div className="game-screen">
@@ -66,7 +184,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
           <span>Pregunta {gameState.currentQuestionIndex + 1} de 15</span>
         </div>
         <div className="current-prize fade-in">
-          <span className="prize-label">Premio actual:</span>
+          <span className="prize-label">Coronas actuales:</span>
           <span className="prize-amount">{prizeAmount}</span>
         </div>
         <button className="quit-button" onClick={onQuitGame}>
@@ -84,7 +202,9 @@ const GameScreen: React.FC<GameScreenProps> = ({
             }`}
             onClick={onUseFiftyFifty}
             disabled={
-              gameState.usedLifelines.fiftyFifty || gameState.isAnswerRevealed
+              gameState.usedLifelines.fiftyFifty ||
+              gameState.isAnswerRevealed ||
+              gameState.isBlinking
             }
             title="50:50 - Elimina dos respuestas incorrectas"
           >
@@ -98,7 +218,9 @@ const GameScreen: React.FC<GameScreenProps> = ({
             }`}
             onClick={onUseAskAudience}
             disabled={
-              gameState.usedLifelines.askAudience || gameState.isAnswerRevealed
+              gameState.usedLifelines.askAudience ||
+              gameState.isAnswerRevealed ||
+              gameState.isBlinking
             }
             title="Pregunta al Público"
           >
@@ -112,7 +234,9 @@ const GameScreen: React.FC<GameScreenProps> = ({
             }`}
             onClick={onUsePhoneAFriend}
             disabled={
-              gameState.usedLifelines.phoneAFriend || gameState.isAnswerRevealed
+              gameState.usedLifelines.phoneAFriend ||
+              gameState.isAnswerRevealed ||
+              gameState.isBlinking
             }
             title="Llamada a un Amigo"
           >
@@ -144,6 +268,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
               onClick={() => onSelectAnswer(option)}
               disabled={
                 gameState.isAnswerRevealed ||
+                gameState.isBlinking ||
                 gameState.eliminatedAnswers.includes(option)
               }
             >
@@ -190,11 +315,52 @@ const GameScreen: React.FC<GameScreenProps> = ({
       {/* Confirm Button */}
       {canConfirm && (
         <div className="confirm-container bounce">
-          <button className="confirm-button glow" onClick={onConfirmAnswer}>
+          <button className="confirm-button glow" onClick={handleConfirmAnswer}>
             ¿Respuesta final?
           </button>
         </div>
       )}
+
+      {/* Next Button */}
+      {canGoNext && (
+        <div className="confirm-container bounce">
+          <button
+            className="confirm-button next-button glow"
+            onClick={onGoToNext}
+          >
+            Siguiente Pregunta →
+          </button>
+        </div>
+      )}
+
+      {/* Results Button */}
+      {canGoToResults && (
+        <div className="confirm-container bounce">
+          <button
+            className="confirm-button results-button glow"
+            onClick={onGoToResults}
+          >
+            Ver Resultados
+          </button>
+        </div>
+      )}
+
+      {/* Audio elements for correct/incorrect sounds */}
+      <audio
+        ref={correctAudioRef}
+        src="/assets/sounds/correcto.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={incorrectAudioRef}
+        src="/assets/sounds/equivocado.mp3"
+        preload="auto"
+      />
+      <audio
+        ref={decisionAudioRef}
+        src="/assets/sounds/decision.MP3"
+        preload="auto"
+      />
     </div>
   );
 };

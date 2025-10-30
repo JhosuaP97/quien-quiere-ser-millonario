@@ -1,31 +1,188 @@
-# Getting Started with Create React App
+# # 🎯 ¿Quién Quiere Ser Millonario? - Edición Colombia 🇨🇴
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Un juego completo de "¿Quién Quiere Ser Millonario?" desarrollado en React con TypeScript. ¡Pon a prueba tus conocimientos y ve si tienes lo que se necesita para convertirte en millonario... en pesos colombianos!
 
-## Available Scripts
+## 🚀 Características
 
-In the project directory, you can run:
+### 🎮 Jugabilidad Completa
 
-### `npm start`
+- **15 preguntas** de dificultad progresiva
+- **3 niveles de dificultad**: Fácil (1-5), Medio (6-10), Difícil (11-15)
+- **Premios acumulativos** hasta $40,000,000,000 (pesos colombianos)
+- **Refugios seguros** en las preguntas 5 y 10
+- **Opción de retirarse** en cualquier momento
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 🛟 Comodines Interactivos
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **50:50**: Elimina dos respuestas incorrectas
+- **Pregunta al Público**: Simula votación de la audiencia
+- **Llamada a un Amigo**: Consejo de un "experto"
 
-### `npm test`
+### ✨ Experiencia Visual
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Diseño moderno** y responsive
+- **Animaciones fluidas** y efectos visuales
+- **Interfaz intuitiva** y fácil de usar
+- **Compatible con dispositivos móviles**
 
-### `npm run build`
+## 📁 Estructura del Proyecto
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+src/
+├── components/          # Componentes React
+│   ├── StartScreen/    # Pantalla de inicio
+│   ├── GameScreen/     # Pantalla principal del juego
+│   └── EndScreen/      # Pantalla de resultados
+├── data/               # Datos del juego
+│   └── questions.ts    # ❗ ARCHIVO PARA EDITAR PREGUNTAS
+├── hooks/              # Hooks personalizados
+│   └── useGameLogic.ts # Lógica principal del juego
+├── styles/             # Estilos globales
+│   └── globals.css     # Variables CSS y animaciones
+└── types/              # Definiciones de TypeScript
+    └── game.ts         # Tipos de datos del juego
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🎯 Cómo Agregar/Editar Preguntas
+
+### Editar Preguntas Existentes
+
+Abre el archivo `src/data/questions.ts` y modifica cualquier pregunta:
+
+```typescript
+{
+  id: 1,
+  question: "¿Cuál es tu pregunta aquí?",
+  answers: {
+    A: "Respuesta A",
+    B: "Respuesta B",
+    C: "Respuesta C (correcta)",
+    D: "Respuesta D"
+  },
+  correctAnswer: "C",
+  difficulty: "easy", // "easy", "medium", o "hard"
+  category: "Tu Categoría" // Opcional
+}
+```
+
+### Agregar Nuevas Preguntas
+
+Simplemente añade nuevos objetos al array `questions`:
+
+```typescript
+export const questions: Question[] = [
+  // ... preguntas existentes ...
+  {
+    id: 16, // Siguiente ID disponible
+    question: "¿Tu nueva pregunta?",
+    answers: {
+      A: "Opción A",
+      B: "Opción B",
+      C: "Opción C",
+      D: "Opción D (correcta)",
+    },
+    correctAnswer: "D",
+    difficulty: "hard",
+    category: "Nueva Categoría",
+  },
+];
+```
+
+### Niveles de Dificultad
+
+- **easy**: Preguntas 1-5 ($2,000,000 - $40,000,000)
+- **medium**: Preguntas 6-10 ($80,000,000 - $1,280,000,000)
+- **hard**: Preguntas 11-15 ($2,560,000,000 - $40,000,000,000)
+
+## 💰 Modificar Premios
+
+Para cambiar los montos de los premios, edita el array `prizeAmounts` en `src/data/questions.ts`:
+
+```typescript
+export const prizeAmounts = [
+  "$2,000,000", // Pregunta 1
+  "$4,000,000", // Pregunta 2
+  "$8,000,000", // Pregunta 3
+  // ... continúa hasta 15 preguntas
+  "$40,000,000,000", // Pregunta 15
+];
+```
+
+## 🚀 Instalación y Uso
+
+### Requisitos Previos
+
+- Node.js (versión 14 o superior)
+- npm o yarn
+
+### Instalación y Ejecución
+
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar en modo desarrollo
+npm start
+```
+
+### Construcción para Producción
+
+```bash
+# Crear build optimizado
+npm run build
+```
+
+## 🇨🇴 Edición Colombia
+
+Esta versión especial utiliza **pesos colombianos** como moneda:
+
+- 💰 Premio máximo: **$40,000,000,000**
+- 🛡️ Refugios seguros: $40,000,000 (pregunta 5) y $1,280,000,000 (pregunta 10)
+- 📈 Progresión realista de premios en pesos colombianos
+
+Para más detalles sobre la versión colombiana, consulta el archivo `COLOMBIA.md`.
+
+## 📱 Compatibilidad
+
+- ✅ **Desktop**: Windows, macOS, Linux
+- ✅ **Mobile**: iOS Safari, Android Chrome
+- ✅ **Tablets**: iPad, Android tablets
+- ✅ **Navegadores**: Chrome, Firefox, Safari, Edge
+
+## 🎨 Personalización Visual
+
+### Colores
+
+Los colores principales se definen en `src/styles/globals.css`:
+
+```css
+:root {
+  --primary-blue: #0a1f3b;
+  --accent-gold: #ffd700;
+  --accent-orange: #ff6b35;
+  /* Modifica estos valores para cambiar la apariencia */
+}
+```
+
+## 🔧 Funcionalidades Técnicas
+
+### Lógica del Juego
+
+- **Selección aleatoria** de preguntas por dificultad
+- **Validación** de respuestas en tiempo real
+- **Sistema de comodines** con lógica realista
+- **Gestión de estado** con React Hooks
+
+### Características de Accesibilidad
+
+- **Responsive design** para todos los dispositivos
+- **Contraste** optimizado para legibilibilidad
+- **Navegación** por teclado
+- **Reducción de movimiento** para usuarios sensibles
+
+---
+
+¡Disfruta jugando y que tengas suerte en tu camino hacia el millón! 🏆💰
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 

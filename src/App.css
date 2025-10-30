@@ -1,38 +1,83 @@
-.App {
-  text-align: center;
-}
+/* Estilos específicos del componente App */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.game-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
 }
 
-.App-link {
-  color: #61dafb;
+/* Background animado opcional */
+.game-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 215, 0, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 107, 53, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(255, 215, 0, 0.02) 0%,
+      transparent 50%
+    );
+  animation: backgroundShift 20s ease-in-out infinite;
+  z-index: -1;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@keyframes backgroundShift {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
   }
-  to {
-    transform: rotate(360deg);
+  25% {
+    transform: translateX(-10px) translateY(-10px);
+  }
+  50% {
+    transform: translateX(10px) translateY(10px);
+  }
+  75% {
+    transform: translateX(-5px) translateY(15px);
+  }
+}
+
+/* Estilos para mejorar la accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .game-container::before {
+    animation: none;
+  }
+
+  .fade-in,
+  .slide-in-left,
+  .slide-in-right,
+  .bounce,
+  .pulse,
+  .glow {
+    animation: none !important;
+  }
+}
+
+/* Estilos para pantallas muy pequeñas */
+@media (max-width: 320px) {
+  .game-container {
+    font-size: 12px;
+  }
+}
+
+/* Estilos para pantallas muy grandes */
+@media (min-width: 1440px) {
+  .game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }

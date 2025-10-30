@@ -1,6 +1,18 @@
 {
   "name": "quien-quiere-ser-millonario",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Juego completo de ¿Quién Quiere Ser Millonario? desarrollado en React con TypeScript",
+  "keywords": [
+    "react",
+    "typescript",
+    "game",
+    "quiz",
+    "millionaire",
+    "trivia"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
